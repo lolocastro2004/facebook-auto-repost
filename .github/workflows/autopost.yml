@@ -1,0 +1,30 @@
+name: Auto Repost Facebook
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"  # cada 10 minutos
+  workflow_dispatch:
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v3
+
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Ejecutar script
+        env:
+          LU17_ACCESS_TOKEN: ${{ secrets.LU17_ACCESS_TOKEN }}
+          TRELEW_ACCESS_TOKEN: ${{ secrets.TRELEW_ACCESS_TOKEN }}
+          LU17_PAGE_ID: ${{ secrets.LU17_PAGE_ID }}
+          TRELEW_PAGE_ID: ${{ secrets.TRELEW_PAGE_ID }}
+        run: python main.py
