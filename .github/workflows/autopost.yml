@@ -2,29 +2,22 @@ name: Auto Repost Facebook
 
 on:
   schedule:
-    - cron: "0 */3 * * *"  # Cada 3 horas
+    - cron: "0 */4 * * *"  # Cada 4 horas
   workflow_dispatch:
 
 jobs:
   repost:
     runs-on: ubuntu-latest
-
     steps:
       - name: Clonar repositorio
         uses: actions/checkout@v3
-
-      - name: Descargar last_posts.txt si existe
-        uses: actions/download-artifact@v4
         with:
-          name: last-posts
-          path: .
+          persist-credentials: false  # obligatorio para commits automáticos
 
-      - name: Crear archivo last_posts.txt si no existe
+      - name: Configurar Git para push
         run: |
-          if [ ! -f last_posts.txt ]; then
-            touch last_posts.txt
-            echo "🆕 Archivo last_posts.txt creado vacío."
-          fi
+          git config --global user.email "github-actions@users.noreply.github.com"
+          git config --global user.name "GitHub Actions"
 
       - name: Configurar Python
         uses: actions/setup-python@v4
@@ -32,7 +25,7 @@ jobs:
           python-version: "3.x"
 
       - name: Instalar dependencias
-        run: pip install requests python-dotenv
+        run: pip install -r requirements.txt
 
       - name: Ejecutar script
         env:
@@ -42,8 +35,12 @@ jobs:
           TRELEW_PAGE_ID: ${{ secrets.TRELEW_PAGE_ID }}
         run: python main.py
 
-      - name: Subir archivo actualizado
-        uses: actions/upload-artifact@v4
-        with:
-          name: last-posts
-          path: last_posts.txt
+      - name: Guardar nuevos IDs si hubo publicaciones
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git add last_posts.txt
+            git commit -m "📥 Actualizar lista de publicaciones compartidas"
+            git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
+          else
+            echo "No hay nuevos IDs para guardar."
+          fi
