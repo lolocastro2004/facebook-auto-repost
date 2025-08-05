@@ -1,9 +1,7 @@
 import os
 import requests
-from dotenv import load_dotenv
 
-# Cargar variables de entorno desde el entorno de ejecución o archivo .env
-load_dotenv()
+# Cargar variables de entorno desde el entorno de ejecución 
 
 LU17_ACCESS_TOKEN = os.getenv("LU17_ACCESS_TOKEN")
 TRELEW_ACCESS_TOKEN = os.getenv("TRELEW_ACCESS_TOKEN")
