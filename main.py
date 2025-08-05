@@ -39,17 +39,20 @@ def get_lu17_posts():
         print("❌ Error al obtener posts:", res.text)
         return []
 
-# Publicar en Trelew Noticias
+# Publicar en Trelew Noticias (con preview)
 def publish_to_trelew(post_id):
     original_url = f"https://www.facebook.com/{post_id}"
-    mensaje = f"📢 Publicación original de LU17.com:\n📌 Fuente original: {original_url}"
     post_url = f"https://graph.facebook.com/v19.0/{TRELEW_PAGE_ID}/feed"
-    res = requests.post(post_url, data={"message": mensaje, "access_token": TRELEW_ACCESS_TOKEN})
+    payload = {
+        "link": original_url,
+        "access_token": TRELEW_ACCESS_TOKEN
+    }
+    res = requests.post(post_url, data=payload)
     if res.status_code == 200:
-        print(f"✅ Publicado correctamente: {post_id}")
+        print(f"✅ Publicado correctamente con link: {original_url}")
         return True
     else:
-        print(f"❌ Error al publicar {post_id}:", res.text)
+        print(f"❌ Error al publicar {original_url}:", res.text)
         return False
 
 # Lógica principal
