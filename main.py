@@ -19,15 +19,23 @@ if not all([LU17_ACCESS_TOKEN, TRELEW_ACCESS_TOKEN, LU17_PAGE_ID, TRELEW_PAGE_ID
 # Cargar IDs ya compartidos
 def load_posted_ids():
     if not os.path.exists(POSTED_FILE):
+        print("📄 Archivo last_posts.txt no existe, se usará una lista vacía.")
         return set()
-    with open(POSTED_FILE, "r") as f:
-        return set(line.strip() for line in f if line.strip())
+    try:
+        with open(POSTED_FILE, "r") as f:
+            return set(line.strip() for line in f if line.strip())
+    except Exception as e:
+        print(f"⚠️ Error al leer {POSTED_FILE}: {e}")
+        return set()
 
 # Guardar nuevos IDs compartidos
 def save_posted_ids(ids):
-    with open(POSTED_FILE, "a") as f:
-        for pid in ids:
-            f.write(pid + "\n")
+    try:
+        with open(POSTED_FILE, "a") as f:
+            for pid in ids:
+                f.write(pid + "\n")
+    except Exception as e:
+        print(f"⚠️ Error al guardar IDs en {POSTED_FILE}: {e}")
 
 # Obtener posts desde LU17
 def get_lu17_posts():
@@ -39,20 +47,16 @@ def get_lu17_posts():
         print("❌ Error al obtener posts:", res.text)
         return []
 
-# Publicar en Trelew Noticias (con preview)
+# Publicar en Trelew Noticias
 def publish_to_trelew(post_id):
     original_url = f"https://www.facebook.com/{post_id}"
     post_url = f"https://graph.facebook.com/v19.0/{TRELEW_PAGE_ID}/feed"
-    payload = {
-        "link": original_url,
-        "access_token": TRELEW_ACCESS_TOKEN
-    }
-    res = requests.post(post_url, data=payload)
+    res = requests.post(post_url, data={"link": original_url, "access_token": TRELEW_ACCESS_TOKEN})
     if res.status_code == 200:
         print(f"✅ Publicado correctamente con link: {original_url}")
         return True
     else:
-        print(f"❌ Error al publicar {original_url}:", res.text)
+        print(f"❌ Error al publicar {post_id}:", res.text)
         return False
 
 # Lógica principal
@@ -69,7 +73,7 @@ def main():
         save_posted_ids(nuevos)
         print(f"📥 {len(nuevos)} nuevas publicaciones compartidas.")
     else:
-        print("📭 No hay publicaciones nuevas.")
+        print("📟 No hay publicaciones nuevas.")
 
 if __name__ == "__main__":
     main()

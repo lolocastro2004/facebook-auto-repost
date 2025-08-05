@@ -2,7 +2,7 @@ name: Auto Repost Facebook
 
 on:
   schedule:
-    - cron: "0 */4 * * *"  # Ejecutar cada 4 horas
+    - cron: "0 */3 * * *"  # Cada 3 horas
   workflow_dispatch:
 
 jobs:
@@ -13,11 +13,18 @@ jobs:
       - name: Clonar repositorio
         uses: actions/checkout@v3
 
-      - name: Restaurar archivo last_posts.txt (artifact)
+      - name: Descargar last_posts.txt si existe
         uses: actions/download-artifact@v4
         with:
           name: last-posts
-        continue-on-error: true
+          path: .
+
+      - name: Crear archivo last_posts.txt si no existe
+        run: |
+          if [ ! -f last_posts.txt ]; then
+            touch last_posts.txt
+            echo "🆕 Archivo last_posts.txt creado vacío."
+          fi
 
       - name: Configurar Python
         uses: actions/setup-python@v4
@@ -35,7 +42,7 @@ jobs:
           TRELEW_PAGE_ID: ${{ secrets.TRELEW_PAGE_ID }}
         run: python main.py
 
-      - name: Guardar archivo last_posts.txt como artifact
+      - name: Subir archivo actualizado
         uses: actions/upload-artifact@v4
         with:
           name: last-posts
